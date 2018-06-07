@@ -1,3 +1,3 @@
 
-import dantecss from './styles/dante.scss';
-import draftcss from './styles/draft.css';
+import './styles/dante.scss'
+import './styles/draft.css'

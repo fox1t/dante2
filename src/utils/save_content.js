@@ -1,8 +1,8 @@
-import axios from "axios"
+import axios from 'axios'
 import Immutable from 'immutable'
 
 class SaveBehavior {
-  constructor(options) {
+  constructor (options) {
     this.getLocks = options.getLocks
     this.config = options.config
     this.editor = options.editor
@@ -10,76 +10,77 @@ class SaveBehavior {
     this.editorState = options.editorState
   }
 
-  handleStore(ev){
+  handleStore (ev) {
     return this.store()
   }
 
-  store(content){
+  store (content) {
     if (!this.config.data_storage.url) { return }
     if (this.getLocks() > 0) { return }
 
     clearTimeout(this.timeout)
 
-    return this.timeout = setTimeout(() => {
+    this.timeout = setTimeout(() => {
       return this.checkforStore(content)
     }
-    , this.config.data_storage.interval)
+      , this.config.data_storage.interval)
+    return this.timeout
   }
 
-  getTextFromEditor(content){
-    return content.blocks.map(o=> {
-        return o.text
-      }
+  getTextFromEditor (content) {
+    return content.blocks.map(o => {
+      return o.text
+    }
     )
-      .join("\n")
+      .join('\n')
   }
 
-  getUrl() {
+  getUrl () {
     let { url } = this.config.data_storage
-    if (typeof(url) === "function") { 
-      return url() 
-    } else { 
-      return url 
+    if (typeof (url) === 'function') {
+      return url()
+    } else {
+      return url
     }
   }
 
-  getMethod() {
+  getMethod () {
     let { method } = this.config.data_storage
-    if (typeof(method) === "function") { 
-      return method() 
-    } else { 
-      return method 
+    if (typeof (method) === 'function') {
+      return method()
+    } else {
+      return method
     }
   }
 
-  getWithCredentials(){
+  getWithCredentials () {
     let { withCredentials } = this.config.data_storage
-    if (typeof(withCredentials) === "function") { 
-      return withCredentials() 
-    } else { 
-      return withCredentials 
+    if (typeof (withCredentials) === 'function') {
+      return withCredentials()
+    } else {
+      return withCredentials
     }
   }
 
-  getCrossDomain(){
+  getCrossDomain () {
     let { crossDomain } = this.config.data_storage
-    if (typeof(crossDomain) === "function") { 
+    if (typeof (crossDomain) === 'function') {
       return crossDomain()
-    } else { 
-      return crossDomain 
+    } else {
+      return crossDomain
     }
   }
 
-  getHeaders(){
+  getHeaders () {
     let { headers } = this.config.data_storage
-    if (typeof(headers) === "function") { 
-      return headers() 
-    } else { 
-      return headers 
+    if (typeof (headers) === 'function') {
+      return headers()
+    } else {
+      return headers
     }
   }
 
-  checkforStore(content){
+  checkforStore (content) {
     // ENTER DATA STORE
     let isChanged = !Immutable.is(Immutable.fromJS(this.editorContent), Immutable.fromJS(content))
     // console.log("CONTENT CHANGED:", isChanged)
@@ -89,11 +90,11 @@ class SaveBehavior {
     this.save(content)
   }
 
-  save(content){
+  save (content) {
     // use save handler from config if exists
-    if (this.config.data_storage.save_handler){
+    if (this.config.data_storage.save_handler) {
       this.config.data_storage.save_handler(this, content)
-      return 
+      return
     }
 
     if (this.config.xhr.before_handler) { this.config.xhr.before_handler() }
@@ -108,21 +109,20 @@ class SaveBehavior {
       },
       withCredentials: this.getWithCredentials(),
       crossDomain: this.getCrossDomain(),
-      headers: this.getHeaders(),
+      headers: this.getHeaders()
     })
-    .then(result=> {
+      .then(result => {
       // console.log "STORING CONTENT", result
-      if (this.config.data_storage.success_handler) { this.config.data_storage.success_handler(result) }
-      if (this.config.xhr.success_handler) { return this.config.xhr.success_handler(result) }
-    }
-    )
-    .catch(error=> {
+        if (this.config.data_storage.success_handler) { this.config.data_storage.success_handler(result) }
+        if (this.config.xhr.success_handler) { return this.config.xhr.success_handler(result) }
+      }
+      )
+      .catch(error => {
       // console.log("ERROR: got error saving content at #{@config.data_storage.url} - #{error}")
-      if (this.config.xhr.failure_handler) { return this.config.xhr.failure_handler(error) }
-    }
-    )
+        if (this.config.xhr.failure_handler) { return this.config.xhr.failure_handler(error) }
+      }
+      )
   }
 }
-
 
 export default SaveBehavior

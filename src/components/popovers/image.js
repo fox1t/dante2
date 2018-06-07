@@ -2,15 +2,12 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 
-import { Entity, RichUtils, AtomicBlockUtils, EditorState } from 'draft-js'
+import { getSelection } from '../../utils/selection'
 
-import { getSelectionRect, getSelection, getRelativeParent } from "../../utils/selection.js"
-
-import { getCurrentBlock, getNode } from '../../model/index.js'
+import { getCurrentBlock, getNode } from '../../model'
 
 class DanteImagePopover extends React.Component {
-
-  constructor(props) {
+  constructor (props) {
     super(props)
 
     this.display = this.display.bind(this)
@@ -29,14 +26,14 @@ class DanteImagePopover extends React.Component {
       },
       show: false,
       scaled: false,
-      buttons: [{ type: "left" },
-                { type: "center"},
-                { type: "fill" },
-                { type: "wide" }]
+      buttons: [{ type: 'left' },
+        { type: 'center' },
+        { type: 'fill' },
+        { type: 'wide' }]
     }
   }
 
-  display(b) {
+  display (b) {
     if (b) {
       return this.show()
     } else {
@@ -44,22 +41,22 @@ class DanteImagePopover extends React.Component {
     }
   }
 
-  show() {
+  show () {
     return this.setState({
       show: true })
   }
 
-  hide() {
+  hide () {
     return this.setState({
       show: false })
   }
 
-  setPosition(coords) {
+  setPosition (coords) {
     return this.setState({
       position: coords })
   }
 
-  _toggleScaled(ev) {
+  _toggleScaled (ev) {
     if (this.state.scaled) {
       return this.collapse()
     } else {
@@ -67,28 +64,27 @@ class DanteImagePopover extends React.Component {
     }
   }
 
-  scale() {
+  scale () {
     return this.setState({
       scaled: true })
   }
 
-  collapse() {
+  collapse () {
     return this.setState({
       scaled: false })
   }
 
-  relocate() {
+  relocate () {
     let { editorState } = this.props
 
     if (editorState.getSelection().isCollapsed()) {
-
       let currentBlock = getCurrentBlock(editorState)
       let blockType = currentBlock.getType()
 
-      let contentState = editorState.getCurrentContent()
-      let selectionState = editorState.getSelection()
+      // let contentState = editorState.getCurrentContent()
+      // let selectionState = editorState.getSelection()
 
-      let block = contentState.getBlockForKey(selectionState.anchorKey)
+      // let block = contentState.getBlockForKey(selectionState.anchorKey)
 
       let nativeSelection = getSelection(window)
       if (!nativeSelection.rangeCount) {
@@ -97,13 +93,13 @@ class DanteImagePopover extends React.Component {
 
       let node = getNode()
 
-      this.display(blockType === "image")
+      this.display(blockType === 'image')
 
-      if (blockType === "image") {
+      if (blockType === 'image') {
         let selectionBoundary = node.anchorNode.parentNode.parentNode
-                                           .parentNode.getBoundingClientRect()
-        
-        let coords = selectionBoundary
+          .parentNode.getBoundingClientRect()
+
+        // let coords = selectionBoundary
 
         let el = this.refs.image_popover
         let padd = el.offsetWidth / 2
@@ -111,55 +107,54 @@ class DanteImagePopover extends React.Component {
         let parent = ReactDOM.findDOMNode(this.props.editor)
         let parentBoundary = parent.getBoundingClientRect()
 
-        const toolbarHeight = el.offsetHeight;
+        const toolbarHeight = el.offsetHeight
 
         let left = selectionBoundary.left + selectionBoundary.width / 2 - padd
-        
-        let diff = window.pageYOffset + parent.getBoundingClientRect().top
-      
-        let top = selectionBoundary.top - parentBoundary.top + toolbarHeight //+ diff
+
+        // let diff = window.pageYOffset + parent.getBoundingClientRect().top
+
+        let top = selectionBoundary.top - parentBoundary.top + toolbarHeight // + diff
 
         return this.setPosition({ top: top, left: left })
-
       }
     } else {
       return this.hide()
     }
   }
 
-  componentWillReceiveProps(newProps) {
+  componentWillReceiveProps (newProps) {
     return this.collapse()
   }
 
-  getStyle() {
+  getStyle () {
     if (!this.state.position) {
       return {}
     }
   }
 
-  handleClick(item) {
+  handleClick (item) {
     return this.props.editor.setDirection(item.type)
   }
 
-  render() {
+  render () {
     return (
       <div
-        ref="image_popover"
-        className={ `dante-popover popover--Aligntooltip popover--top popover--animated ${ this.state.show ? 'is-active' : undefined }` }
+        ref='image_popover'
+        className={`dante-popover popover--Aligntooltip popover--top popover--animated ${this.state.show ? 'is-active' : undefined}`}
         style={
           { top: this.state.position.top,
             left: this.state.position.left }
-          }
+        }
       >
         <div className='popover-inner'>
           <ul className='dante-menu-buttons'>
-            { this.state.buttons.map( (item, i) => {
-                return  <DanteImagePopoverItem
-                          item={ item }
-                          handleClick={ this.handleClick }
-                          key={ i }
-                        />
-              })
+            { this.state.buttons.map((item, i) => {
+              return <DanteImagePopoverItem
+                item={item}
+                handleClick={this.handleClick}
+                key={i}
+              />
+            })
             }
           </ul>
         </div>
@@ -170,26 +165,24 @@ class DanteImagePopover extends React.Component {
 }
 
 class DanteImagePopoverItem extends React.Component {
-
-  constructor(...args) {
+  constructor (...args) {
     super(...args)
     this.handleClick = this.handleClick.bind(this)
     this.render = this.render.bind(this)
   }
 
-  handleClick(e) {
+  handleClick (e) {
     e.preventDefault()
     return this.props.handleClick(this.props.item)
   }
 
-  render() {
+  render () {
     return <li
-      className={`dante-menu-button align-${ this.props.item.type }`}
+      className={`dante-menu-button align-${this.props.item.type}`}
       onMouseDown={this.handleClick}>
-        <span className={`tooltip-icon dante-icon dante-icon-image-${ this.props.item.type }`} />
+      <span className={`tooltip-icon dante-icon dante-icon-image-${this.props.item.type}`} />
     </li>
   }
 }
 
 export default DanteImagePopover
-

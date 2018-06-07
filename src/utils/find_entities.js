@@ -1,9 +1,7 @@
-import { Entity } from 'draft-js'
-
-//TODO: what the f*ck is happening here? ;-;
+// TODO: what the f*ck is happening here? ;-;
 const findEntities = (entityType, instance, contentBlock, callback) => {
-  return contentBlock.findEntityRanges((function(_this) {
-    return function(character) {
+  return contentBlock.findEntityRanges((function (_this) {
+    return function (character) {
       var entityKey, opts, res
       let contentState = instance.state.editorState.getCurrentContent()
       entityKey = character.getEntity()

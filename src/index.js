@@ -5,6 +5,6 @@ window.Dante = Dante
 window.DanteEditor = DanteEditor
 
 export {
-  Dante, 
+  Dante,
   DanteEditor
 }

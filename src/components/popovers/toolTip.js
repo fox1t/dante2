@@ -1,26 +1,17 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 
-import { 
-  convertToRaw, 
-  CompositeDecorator, 
-  getVisibleSelectionRect, 
-  getDefaultKeyBinding, 
-  getSelectionOffsetKeyForNode, 
-  KeyBindingUtil, 
-  ContentState, 
-  Editor, 
-  EditorState, 
-  Entity, 
+import {
+  getVisibleSelectionRect,
+  Entity,
   RichUtils } from 'draft-js'
 
-import { getSelectionRect, getSelection, getRelativeParent } from "../../utils/selection.js"
+import { getSelectionRect, getSelection, getRelativeParent } from '../../utils/selection'
 
-import { getCurrentBlock } from '../../model/index.js'
+import { getCurrentBlock } from '../../model'
 
 class DanteTooltip extends React.Component {
-
-  constructor(props) {
+  constructor (props) {
     super(props)
     this._clickInlineHandler = this._clickInlineHandler.bind(this)
     this.display = this.display.bind(this)
@@ -45,7 +36,7 @@ class DanteTooltip extends React.Component {
     }
   }
 
-  _clickInlineHandler(ev, style) {
+  _clickInlineHandler (ev, style) {
     ev.preventDefault()
 
     this.props.onChange(RichUtils.toggleInlineStyle(this.props.editorState, style))
@@ -55,7 +46,7 @@ class DanteTooltip extends React.Component {
     }, 0)
   }
 
-  display(b) {
+  display (b) {
     if (b) {
       return this.show()
     } else {
@@ -63,24 +54,24 @@ class DanteTooltip extends React.Component {
     }
   }
 
-  show() {
+  show () {
     return this.setState({
       show: true })
   }
 
-  hide() {
+  hide () {
     return this.setState({
       link_mode: false,
       show: false
     })
   }
 
-  setPosition(coords) {
+  setPosition (coords) {
     return this.setState({
       position: coords })
   }
 
-  isDescendant(parent, child) {
+  isDescendant (parent, child) {
     let node = child.parentNode
     while (node !== null) {
       if (node === parent) {
@@ -91,8 +82,7 @@ class DanteTooltip extends React.Component {
     return false
   }
 
-  relocate() {
-
+  relocate () {
     let currentBlock = getCurrentBlock(this.props.editorState)
     let blockType = currentBlock.getType()
     // display tooltip only for unstyled
@@ -120,7 +110,7 @@ class DanteTooltip extends React.Component {
     let selectionBoundary = getSelectionRect(nativeSelection)
 
     let parent = ReactDOM.findDOMNode(this.props.editor)
-    let parentBoundary = parent.getBoundingClientRect()
+    // let parentBoundary = parent.getBoundingClientRect()
 
     // hide if selected node is not in editor
     if (!this.isDescendant(parent, nativeSelection.anchorNode)) {
@@ -128,22 +118,22 @@ class DanteTooltip extends React.Component {
       return
     }
 
-    //let top = selectionBoundary.top - parentBoundary.top - -90 - 5
+    // let top = selectionBoundary.top - parentBoundary.top - -90 - 5
 
-    const relativeParent = getRelativeParent(this.refs.dante_menu.parentElement);
-    const toolbarHeight = this.refs.dante_menu.clientHeight;
-    const relativeRect = (relativeParent || document.body).getBoundingClientRect();
-    const selectionRect = getVisibleSelectionRect(window);
+    const relativeParent = getRelativeParent(this.refs.dante_menu.parentElement)
+    const toolbarHeight = this.refs.dante_menu.clientHeight
+    const relativeRect = (relativeParent || document.body).getBoundingClientRect()
+    const selectionRect = getVisibleSelectionRect(window)
 
-    if(!selectionRect || !relativeRect || !selectionBoundary)
+    if (!selectionRect || !relativeRect || !selectionBoundary) {
       return
-
+    }
 
     let diff = window.pageYOffset + parent.getBoundingClientRect().top
     let top = (selectionRect.top - relativeRect.top) - toolbarHeight + diff
     let left = selectionBoundary.left + selectionBoundary.width / 2 - padd
 
-    //let left = (selectionRect.left - relativeRect.left) + (selectionRect.width / 2)
+    // let left = (selectionRect.left - relativeRect.left) + (selectionRect.width / 2)
 
     if (!top || !left) {
       return
@@ -159,7 +149,7 @@ class DanteTooltip extends React.Component {
     })
   }
 
-  _clickBlockHandler(ev, style) {
+  _clickBlockHandler (ev, style) {
     ev.preventDefault()
 
     this.props.onChange(RichUtils.toggleBlockType(this.props.editorState, style))
@@ -169,51 +159,51 @@ class DanteTooltip extends React.Component {
     }, 0)
   }
 
-  displayLinkMode() {
+  displayLinkMode () {
     if (this.state.link_mode) {
-      return "dante-menu--linkmode"
+      return 'dante-menu--linkmode'
     } else {
-      return ""
+      return ''
     }
   }
 
-  displayActiveMenu() {
+  displayActiveMenu () {
     if (this.state.show) {
-      return "dante-menu--active"
+      return 'dante-menu--active'
     } else {
-      return ""
+      return ''
     }
   }
 
-  _enableLinkMode(ev) {
+  _enableLinkMode (ev) {
     ev.preventDefault()
     return this.setState({
       link_mode: true })
   }
 
-  _disableLinkMode(ev) {
+  _disableLinkMode (ev) {
     ev.preventDefault()
     return this.setState({
       link_mode: false,
-      url: ""
+      url: ''
     })
   }
 
-  hideMenu() {
+  hideMenu () {
     return this.hide()
   }
 
-  handleInputEnter(e) {
+  handleInputEnter (e) {
     if (e.which === 13) {
       return this.confirmLink(e)
     }
   }
 
-  confirmLink(e) {
+  confirmLink (e) {
     e.preventDefault()
     let { editorState } = this.props
     let urlValue = e.currentTarget.value
-    let contentState = editorState.getCurrentContent()
+    // let contentState = editorState.getCurrentContent()
     let selection = editorState.getSelection()
 
     let opts = {
@@ -221,12 +211,12 @@ class DanteTooltip extends React.Component {
       showPopLinkOver: this.props.showPopLinkOver,
       hidePopLinkOver: this.props.hidePopLinkOver
     }
-    
+
     let entityKey = Entity.create('LINK', 'MUTABLE', opts)
-    //contentState.createEntity('LINK', 'MUTABLE', opts)
+    // contentState.createEntity('LINK', 'MUTABLE', opts)
 
     if (selection.isCollapsed()) {
-      console.log("COLLAPSED SKIPPING LINK")
+      console.log('COLLAPSED SKIPPING LINK')
       return
     }
 
@@ -235,30 +225,30 @@ class DanteTooltip extends React.Component {
     return this._disableLinkMode(e)
   }
 
-  getPosition() {
+  getPosition () {
     let pos = this.state.position
     return pos
   }
 
-  inlineItems() {
+  inlineItems () {
     return this.props.widget_options.block_types.filter(o => {
-      return o.type === "inline"
+      return o.type === 'inline'
     })
   }
 
-  blockItems() {
+  blockItems () {
     return this.props.widget_options.block_types.filter(o => {
-      return o.type === "block"
+      return o.type === 'block'
     })
   }
 
-  getDefaultValue() {
+  getDefaultValue () {
     if (this.refs.dante_menu_input) {
-      this.refs.dante_menu_input.value = ""
+      this.refs.dante_menu_input.value = ''
     }
-    
+
     let currentBlock = getCurrentBlock(this.props.editorState)
-    let blockType = currentBlock.getType()
+    // let blockType = currentBlock.getType()
     let selection = this.props.editor.state.editorState.getSelection()
     let contentState = this.props.editorState.getCurrentContent()
     let selectedEntity = null
@@ -277,57 +267,57 @@ class DanteTooltip extends React.Component {
 
       if (start === selStart && end === selEnd) {
         defaultUrl = contentState.getEntity(selectedEntity).getData().url
-        return this.refs.dante_menu_input.value = defaultUrl
+        this.refs.dante_menu_input.value = defaultUrl
+        return this.refs.dante_menu_input.value
       }
     })
   }
 
-  render() {
+  render () {
     return (
       <div
-        id="dante-menu"
-        ref="dante_menu"
-        className={ `dante-menu ${ this.displayActiveMenu() } ${ this.displayLinkMode() }` }
-        style={ this.getPosition() }
+        id='dante-menu'
+        ref='dante_menu'
+        className={`dante-menu ${this.displayActiveMenu()} ${this.displayLinkMode()}`}
+        style={this.getPosition()}
       >
-        <div className="dante-menu-linkinput">
+        <div className='dante-menu-linkinput'>
           <input
-            className="dante-menu-input"
-            ref="dante_menu_input"
+            className='dante-menu-input'
+            ref='dante_menu_input'
             placeholder={this.props.widget_options.placeholder}
-            onKeyPress={ this.handleInputEnter }
-            defaultValue={ this.getDefaultValue() }
+            onKeyPress={this.handleInputEnter}
+            defaultValue={this.getDefaultValue()}
           />
-          <div className="dante-menu-button" onMouseDown={ this._disableLinkMode } />
+          <div className='dante-menu-button' onMouseDown={this._disableLinkMode} />
         </div>
-        <ul className="dante-menu-buttons">
-          { this.blockItems().map( (item, i) => {
-              return  <DanteTooltipItem
-                        key={ i }
-                        item={ item }
-                        handleClick={ this._clickBlockHandler }
-                        editorState={ this.props.editorState }
-                        type="block"
-                        currentStyle={ this.props.editorState.getCurrentInlineStyle }
-                      />
-            })
+        <ul className='dante-menu-buttons'>
+          { this.blockItems().map((item, i) => {
+            return <DanteTooltipItem
+              key={i}
+              item={item}
+              handleClick={this._clickBlockHandler}
+              editorState={this.props.editorState}
+              type='block'
+              currentStyle={this.props.editorState.getCurrentInlineStyle}
+            />
+          })
           }
 
           <DanteTooltipLink
-            editorState={ this.props.editorState }
-            enableLinkMode={ this._enableLinkMode }
+            editorState={this.props.editorState}
+            enableLinkMode={this._enableLinkMode}
           />
 
-
-          { this.inlineItems().map( (item, i) => {
-              return  <DanteTooltipItem
-                        key={ i }
-                        item={ item }
-                        type="inline"
-                        editorState={ this.props.editorState }
-                        handleClick={ this._clickInlineHandler }
-                      />
-            })
+          { this.inlineItems().map((item, i) => {
+            return <DanteTooltipItem
+              key={i}
+              item={item}
+              type='inline'
+              editorState={this.props.editorState}
+              handleClick={this._clickInlineHandler}
+            />
+          })
           }
         </ul>
       </div>
@@ -336,8 +326,7 @@ class DanteTooltip extends React.Component {
 }
 
 class DanteTooltipItem extends React.Component {
-
-  constructor(...args) {
+  constructor (...args) {
     super(...args)
     this.handleClick = this.handleClick.bind(this)
     this.activeClass = this.activeClass.bind(this)
@@ -347,36 +336,36 @@ class DanteTooltipItem extends React.Component {
     this.render = this.render.bind(this)
   }
 
-  handleClick(ev) {
+  handleClick (ev) {
     return this.props.handleClick(ev, this.props.item.style)
   }
 
-  activeClass() {
+  activeClass () {
     if (this.isActive()) {
-      return "active"
+      return 'active'
     } else {
-      return ""
+      return ''
     }
   }
 
-  isActive() {
-    if (this.props.type === "block") {
+  isActive () {
+    if (this.props.type === 'block') {
       return this.activeClassBlock()
     } else {
       return this.activeClassInline()
     }
   }
 
-  activeClassInline() {
+  activeClassInline () {
     if (!this.props.editorState) {
       return
     }
-    //console.log @props.item
+    // console.log @props.item
     return this.props.editorState.getCurrentInlineStyle().has(this.props.item.style)
   }
 
-  activeClassBlock() {
-    //console.log "EDITOR STATE", @props.editorState
+  activeClassBlock () {
+    // console.log "EDITOR STATE", @props.editorState
     if (!this.props.editorState) {
       return
     }
@@ -385,42 +374,35 @@ class DanteTooltipItem extends React.Component {
     return this.props.item.style === blockType
   }
 
-  render() {
+  render () {
     return (
-      <li className={ `dante-menu-button ${ this.activeClass() }` } onMouseDown={ this.handleClick }>
-        <i className={ `dante-icon dante-icon-${ this.props.item.label }` } data-action="bold" />
+      <li className={`dante-menu-button ${this.activeClass()}`} onMouseDown={this.handleClick}>
+        <i className={`dante-icon dante-icon-${this.props.item.label}`} data-action='bold' />
       </li>
     )
   }
 }
 
 class DanteTooltipLink extends React.Component {
-
-  constructor(...args) {
+  constructor (...args) {
     super(...args)
     this.promptForLink = this.promptForLink.bind(this)
   }
 
-  promptForLink(ev) {
+  promptForLink (ev) {
     let selection = this.props.editorState.getSelection()
     if (!selection.isCollapsed()) {
       return this.props.enableLinkMode(ev)
     }
   }
 
-  render() {
+  render () {
     return (
-      <li className="dante-menu-button" onMouseDown={ this.promptForLink }>
-        <i className="dante-icon icon-createlink" data-action="createlink">link</i>
+      <li className='dante-menu-button' onMouseDown={this.promptForLink}>
+        <i className='dante-icon icon-createlink' data-action='createlink'>link</i>
       </li>
     )
   }
 }
 
-
-
-
-
-
 export default DanteTooltip
-

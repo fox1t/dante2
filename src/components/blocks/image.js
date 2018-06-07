@@ -1,20 +1,14 @@
+/* global Image, FormData */
 import React from 'react'
-import ReactDOM from 'react-dom'
 
-import {
-  Entity, 
-  RichUtils, 
-  AtomicBlockUtils, 
-  EditorBlock, 
-  EditorState } from 'draft-js'
+import { EditorBlock, EditorState } from 'draft-js'
 
-import axios from "axios"
+import axios from 'axios'
 
-import { updateDataOfBlock } from '../../model/index.js'
+import { updateDataOfBlock } from '../../model'
 
 export default class ImageBlock extends React.Component {
-
-  constructor(props) {
+  constructor (props) {
     super(props)
 
     this.blockPropsSrc = this.blockPropsSrc.bind(this)
@@ -37,7 +31,7 @@ export default class ImageBlock extends React.Component {
     this.placeholderText = this.placeholderText.bind(this)
     this.handleFocus = this.handleFocus.bind(this)
     this.render = this.render.bind(this)
-    let existing_data = this.props.block.getData().toJS()
+    let existingData = this.props.block.getData().toJS()
 
     this.config = this.props.blockProps.config
     this.file = this.props.blockProps.data.get('file')
@@ -46,16 +40,16 @@ export default class ImageBlock extends React.Component {
       selected: false,
       loading_progress: 0,
       caption: this.defaultPlaceholder(),
-      direction: existing_data.direction || "center",
+      direction: existingData.direction || 'center',
       width: 0,
       height: 0,
       file: null,
-      url: this.blockPropsSrc() || this.defaultUrl(existing_data),
-      aspect_ratio: this.defaultAspectRatio(existing_data)
+      url: this.blockPropsSrc() || this.defaultUrl(existingData),
+      aspect_ratio: this.defaultAspectRatio(existingData)
     }
   }
 
-  blockPropsSrc() {
+  blockPropsSrc () {
     // console.log @.props.blockProps.data.src
     return this.props.blockProps.data.src
   }
@@ -69,7 +63,7 @@ export default class ImageBlock extends React.Component {
     null
   */
 
-  defaultUrl(data) {
+  defaultUrl (data) {
     if (data.url) {
       return data.url
     }
@@ -85,11 +79,11 @@ export default class ImageBlock extends React.Component {
     }
   }
 
-  defaultPlaceholder() {
+  defaultPlaceholder () {
     return this.props.blockProps.config.image_caption_placeholder
   }
 
-  defaultAspectRatio(data) {
+  defaultAspectRatio (data) {
     if (data.aspect_ratio) {
       return {
         width: data.aspect_ratio['width'],
@@ -105,7 +99,7 @@ export default class ImageBlock extends React.Component {
     }
   }
 
-  getAspectRatio(w, h) {
+  getAspectRatio (w, h) {
     let maxWidth = 1000
     let maxHeight = 1000
     let ratio = 0
@@ -125,34 +119,33 @@ export default class ImageBlock extends React.Component {
       height = height * ratio // Reset height to match scaled image
     }
 
-    let fill_ratio = height / width * 100
-    let result = { width, height, ratio: fill_ratio }
+    const fillRatio = height / width * 100
+    const result = { width, height, ratio: fillRatio }
     // console.log result
     return result
   }
 
   // will update block state
-  updateData() {
-    let { blockProps } = this.props
-    let { block } = this.props
-    let { getEditorState } = this.props.blockProps
-    let { setEditorState } = this.props.blockProps
-    let data = block.getData()
-    let newData = data.merge(this.state).merge({ forceUpload: false })
+  updateData () {
+    const { block } = this.props
+    const { getEditorState } = this.props.blockProps
+    const { setEditorState } = this.props.blockProps
+    const data = block.getData()
+    const newData = data.merge(this.state).merge({ forceUpload: false })
     return setEditorState(updateDataOfBlock(getEditorState(), block, newData))
   }
 
-  replaceImg() {
+  replaceImg () {
     this.img = new Image()
     this.img.src = this.refs.image_tag.src
     this.setState({
       url: this.img.src })
     let self = this
     // exit only when not blob and not forceUload
-    if (!this.img.src.includes("blob:") && !this.props.block.data.get("forceUpload")) {
+    if (!this.img.src.includes('blob:') && !this.props.block.data.get('forceUpload')) {
       return
     }
-    return this.img.onload = () => {
+    const imageOnLoad = this.img.onload = () => {
       this.setState({
         width: this.img.width,
         height: this.img.height,
@@ -161,38 +154,39 @@ export default class ImageBlock extends React.Component {
 
       return this.handleUpload()
     }
+    return imageOnLoad
   }
 
-  startLoader() {
+  startLoader () {
     return this.setState({
       loading: true })
   }
 
-  stopLoader() {
+  stopLoader () {
     return this.setState({
       loading: false })
   }
 
-  handleUpload() {
+  handleUpload () {
     this.startLoader()
     this.props.blockProps.addLock()
     this.updateData()
     return this.uploadFile()
   }
 
-  componentDidMount() {
+  componentDidMount () {
     return this.replaceImg()
   }
 
-  aspectRatio() {
+  aspectRatio () {
     return {
-      maxWidth: `${ this.state.aspect_ratio.width }`,
-      maxHeight: `${ this.state.aspect_ratio.height }`,
-      ratio: `${ this.state.aspect_ratio.height }`
+      maxWidth: `${this.state.aspect_ratio.width}`,
+      maxHeight: `${this.state.aspect_ratio.height}`,
+      ratio: `${this.state.aspect_ratio.height}`
     }
   }
 
-  updateDataSelection() {
+  updateDataSelection () {
     const { getEditorState, setEditorState } = this.props.blockProps
     const newselection = getEditorState().getSelection().merge({
       anchorKey: this.props.block.getKey(),
@@ -202,32 +196,32 @@ export default class ImageBlock extends React.Component {
     return setEditorState(EditorState.forceSelection(getEditorState(), newselection))
   }
 
-  handleGrafFigureSelectImg(e) {
+  handleGrafFigureSelectImg (e) {
     e.preventDefault()
     return this.setState({ selected: true }, this.updateDataSelection)
   }
 
-  //main_editor.onChange(main_editor.state.editorState)
+  // main_editor.onChange(main_editor.state.editorState)
 
-  coords() {
+  coords () {
     return {
-      maxWidth: `${ this.state.aspect_ratio.width }px`,
-      maxHeight: `${ this.state.aspect_ratio.height }px`
+      maxWidth: `${this.state.aspect_ratio.width}px`,
+      maxHeight: `${this.state.aspect_ratio.height}px`
     }
   }
 
-  getBase64Image(img) {
-    let canvas = document.createElement("canvas")
+  getBase64Image (img) {
+    let canvas = document.createElement('canvas')
     canvas.width = img.width
     canvas.height = img.height
-    let ctx = canvas.getContext("2d")
+    let ctx = canvas.getContext('2d')
     ctx.drawImage(img, 0, 0)
-    let dataURL = canvas.toDataURL("image/png")
+    let dataURL = canvas.toDataURL('image/png')
 
     return dataURL
   }
 
-  formatData() {
+  formatData () {
     let formData = new FormData()
     if (this.file) {
       let formName = this.config.upload_formName || 'file'
@@ -235,37 +229,35 @@ export default class ImageBlock extends React.Component {
       formData.append(formName, this.file)
       return formData
     } else {
-      formData.append('url', this.props.blockProps.data.get("url"))
+      formData.append('url', this.props.blockProps.data.get('url'))
       return formData
     }
   }
 
-  getUploadUrl() {
+  getUploadUrl () {
     let url = this.config.upload_url
-    if (typeof url === "function") {
+    if (typeof url === 'function') {
       return url()
     } else {
       return url
     }
   }
 
-  getUploadHeaders()  {
-   return this.config.upload_headers || {}
+  getUploadHeaders () {
+    return this.config.upload_headers || {}
   }
 
-  uploadFile() {
-
-    let handleUp
+  uploadFile () {
     // custom upload handler
     if (this.config.upload_handler) {
       return this.config.upload_handler(this.formatData().get('file'), this)
     }
-    
-    if (!this.config.upload_url){
+
+    if (!this.config.upload_url) {
       this.stopLoader()
       return
     }
-    
+
     axios({
       method: 'post',
       url: this.getUploadUrl(),
@@ -283,78 +275,78 @@ export default class ImageBlock extends React.Component {
     }).catch(error => {
       this.uploadFailed()
 
-      console.log(`ERROR: got error uploading file ${ error }`)
+      console.log(`ERROR: got error uploading file ${error}`)
       if (this.config.upload_error_callback) {
         return this.config.upload_error_callback(error, this)
       }
     })
 
-    return handleUp = json_response => {
-      return this.uploadCompleted(json_response.url, n)
+    const handleUp = jsonResponse => {
+      return this.uploadCompleted(jsonResponse.url)
     }
+    return handleUp
   }
 
-  uploadFailed() {
+  uploadFailed () {
     this.props.blockProps.removeLock()
     this.stopLoader()
   }
 
-  uploadCompleted(url) {
+  uploadCompleted (url) {
     this.setState({ url }, this.updateData)
     this.props.blockProps.removeLock()
     this.stopLoader()
     this.file = null
   }
 
-  updateProgressBar(e) {
+  updateProgressBar (e) {
     let complete = this.state.loading_progress
     if (e.lengthComputable) {
       complete = e.loaded / e.total * 100
       complete = complete != null ? complete : { complete: 0 }
       this.setState({
         loading_progress: complete })
-      return console.log(`complete: ${ complete }`)
+      return console.log(`complete: ${complete}`)
     }
   }
 
-  placeHolderEnabled() {
+  placeHolderEnabled () {
     return this.state.enabled || this.props.block.getText()
   }
 
-  placeholderText() {
+  placeholderText () {
     return this.config.image_caption_placeholder
   }
 
-  handleFocus(e) {
+  handleFocus (e) {
 
   }
 
-  render() {
-
+  render () {
     return (
-      <div ref="image_tag2" suppressContentEditableWarning={true}>
-        <div className="aspectRatioPlaceholder is-locked" 
-          style={this.coords()} 
+      <div ref='image_tag2' suppressContentEditableWarning>
+        <div className='aspectRatioPlaceholder is-locked'
+          style={this.coords()}
           onClick={this.handleGrafFigureSelectImg}>
-          <div style={{ paddingBottom: `${ this.state.aspect_ratio.ratio }%` }} 
+          <div style={{ paddingBottom: `${this.state.aspect_ratio.ratio}%` }}
             className='aspect-ratio-fill' />
-          <img src={this.state.url} 
-            ref="image_tag" 
-            height={this.state.aspect_ratio.height} 
-            width={this.state.aspect_ratio.width} 
+          <img src={this.state.url}
+            ref='image_tag'
+            height={this.state.aspect_ratio.height}
+            width={this.state.aspect_ratio.width}
             className='graf-image'
             contentEditable={false}
           />
-          <Loader toggle={this.state.loading} 
+          <Loader toggle={this.state.loading}
             progress={this.state.loading_progress} />
         </div>
         <figcaption className='imageCaption' onMouseDown={this.handleFocus}>
-          { this.props.block.getText().length === 0 ? 
-            <span className="danteDefaultPlaceholder">
+          { this.props.block.getText().length === 0
+            ? <span className='danteDefaultPlaceholder'>
               {this.placeholderText()}
             </span> : undefined}
-          <EditorBlock {...Object.assign({}, this.props, { 
-            "editable": true, "className": "imageCaption" })
+          <EditorBlock {...Object.assign({}, this.props, {
+            'editable': true, 'className': 'imageCaption' })
             } />
         </figcaption>
       </div>
@@ -363,26 +355,23 @@ export default class ImageBlock extends React.Component {
 }
 
 class Loader extends React.Component {
-
-  render() {
+  render () {
     return (
       <div>
         { this.props.toggle
-          ? <div className="image-upoader-loader">
-              <p>
-                { this.props.progress === 100
-                  ? "processing image..."
-                  : <span>
-                      <span>loading</span> { Math.round( this.props.progress ) }
-                    </span>
-                }
-              </p>
-            </div>
+          ? <div className='image-upoader-loader'>
+            <p>
+              { this.props.progress === 100
+                ? 'processing image...'
+                : <span>
+                  <span>loading</span> { Math.round(this.props.progress) }
+                </span>
+              }
+            </p>
+          </div>
           : undefined
         }
       </div>
     )
   }
 }
-
-
